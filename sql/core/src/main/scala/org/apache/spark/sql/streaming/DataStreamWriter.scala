@@ -312,7 +312,7 @@ final class DataStreamWriter[T] private[sql](ds: Dataset[T]) {
         Map(
           DataSourceUtils.CLUSTERING_COLUMNS_KEY -> DataSourceUtils.encodePartitioningColumns(cols))
       }.getOrElse(Map.empty)
-      val partitioningOrClusteringTransform = normalizedClusteringCols.map { colNames =>
+      val partitioningTransform = normalizedClusteringCols.map { colNames =>
         Array(ClusterByTransform(colNames.map(col => FieldReference(col)))).toImmutableArraySeq
       }.getOrElse(partitioningColumns.getOrElse(Nil).asTransforms.toImmutableArraySeq)
 
@@ -331,7 +331,7 @@ final class DataStreamWriter[T] private[sql](ds: Dataset[T]) {
       val cmd = CreateTable(
         UnresolvedIdentifier(originalMultipartIdentifier),
         df.schema.asNullable.map(ColumnDefinition.fromV1Column(_, parser)),
-        partitioningOrClusteringTransform,
+        partitioningTransform,
         tableSpec,
         ignoreIfExists = false)
       Dataset.ofRows(df.sparkSession, cmd)
